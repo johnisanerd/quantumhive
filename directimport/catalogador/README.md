@@ -42,7 +42,7 @@ Para sumar un rubro nuevo, agregá un bloque en `DEFAULT_QUERIES` dentro de `cat
 
 ## Stack
 
-- **Apify** (`compass/google-maps-scraper`): búsqueda de fábricas en Google Maps.
+- **Apify** (`johnvc/google-maps-places-api`): búsqueda de fábricas en Google Maps.
 - **Requests**: fetch del HTML del sitio web de cada fábrica.
 - **Gemini 1.5 Pro** (`google-genai` SDK): extracción estructurada de datos.
 - **python-dotenv**: carga de variables de entorno.
@@ -67,7 +67,7 @@ El agente **salta fábricas que ya tienen `.md`**. Para re-procesar, usá `--for
 ## Limitaciones conocidas
 
 - El fetch de sitios web usa `requests` (HTML estático). Si la fábrica tiene una web con mucho JS, puede no traer el catálogo. Workaround futuro: agregar Playwright o usar el actor `apify/website-content-crawler` de Apify.
-- El actor `compass/google-maps-scraper` es pago (incluido en planes Apify de pago). Verificá que tu plan lo incluya o usá una alternativa (`drobnikj/google-maps-scraper`).
+- El actor `johnvc/google-maps-places-api` devuelve como mínimo 20 resultados por búsqueda. Verificá que siga vigente antes de usarlo o usá una alternativa (`drobnikj/google-maps-scraper`).
 - No detecta webs caídas ni cerradas. Las filtra silenciosamente.
 
 ## Próximas mejoras (diferido)

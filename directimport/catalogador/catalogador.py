@@ -47,8 +47,8 @@ if not GEMINI_API_KEY:
 
 # Actor de Apify para Google Maps. Verificar vigencia antes de usar (regla #6).
 # Búsqueda: https://apify.com/store?search=google%20maps%20scraper
-# Alternativas: compass/google-maps-scraper, drobnikj/google-maps-scraper.
-GMAPS_ACTOR = "compass/google-maps-scraper"
+# Alternativas: drobnikj/google-maps-scraper.
+GMAPS_ACTOR = "johnvc/google-maps-places-api"
 GEMINI_MODEL = "gemini-1.5-pro"
 
 # Queries de búsqueda por rubro. Cada rubro tiene 4-5 variantes para
@@ -113,19 +113,16 @@ def search_factories(category: str, region: str, max_factories: int) -> list:
     all_places = []
     for query in queries:
         run_input = {
-            "searchQuery": f"{query} en {region}",
-            "maxCrawledPlaces": max_factories,
+            "searchTerms": [f"{query} en {region}"],
+            "maxResultsPerSearch": max(max_factories, 20),  # el actor pide mínimo 20
             "language": "es",
-            "countryCode": "ar",
-            "includeWebResults": False,
-            "scrapePlaceDetailPage": True,
-            "scrapeDirectories": False,
-            "maxReviews": 0,
-            "maxImages": 0,
         }
         try:
             items = run_apify_actor(client, run_input, f"Query: '{query}'")
             for item in items:
+                if item.get("error_message"):
+                    print(f"        (error en query '{query}': {item['error_message']})")
+                    continue
                 item["_query"] = query
                 all_places.append(item)
         except Exception as e:
@@ -274,7 +271,7 @@ def render_factory_md(place: dict, analysis: dict) -> str:
 - **Rubro:** {analysis.get("rubro") or "(no detectado)"}
 - **Sub-rubro:** {analysis.get("sub_rubro") or "(no detectado)"}
 - **Capacidad estimada:** {analysis.get("capacidad_estimada") or "(no detectada)"}
-- **Rating Google:** {analysis.get("rating_google") or place.get("totalScore", "(no)")} ({analysis.get("resenas_count") or place.get("reviewsCount", 0)} reseñas)
+- **Rating Google:** {analysis.get("rating_google") or place.get("rating", "(no)")} ({analysis.get("resenas_count") or place.get("ratingCount", 0)} reseñas)
 
 ## Ubicación
 
@@ -286,7 +283,7 @@ def render_factory_md(place: dict, analysis: dict) -> str:
 ## Contacto
 
 - **Web:** {cont.get("web") or place.get("website") or "(no detectada)"}
-- **Teléfono:** {cont.get("telefono") or place.get("phone", "(no detectado)")}
+- **Teléfono:** {cont.get("telefono") or place.get("phoneNumber", "(no detectado)")}
 - **Email:** {cont.get("email") or "(no detectado)"}
 - **WhatsApp:** {cont.get("whatsapp") or "(no detectado)"}
 - **Instagram:** {cont.get("instagram") or "(no detectado)"}
